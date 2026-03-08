@@ -24,8 +24,7 @@ La aplicación está diseñada para integrarse en la estructura organizativa del
 - Registro de datos personales y de contacto
 - Antecedentes familiares y personales
 - Clasificación de factores de riesgo ARO (alto riesgo obstétrico) y BRO (bajo riesgo obstétrico)
-- Cálculo automático de tiempo gestacional
- de índice- Cálculo de masa corporal (IMC)
+- Cálculo automático de tiempo gestacional y cálculo de masa corporal (IMC)
 - Seguimiento prenatal con evoluciones
 - Programación de citas médicas
 
