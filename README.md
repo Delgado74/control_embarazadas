@@ -171,7 +171,7 @@ lib/
 
 ## Licencia
 
-Proyecto de código abierto. Se recomienda licencia MIT o Apache 2.0 para facilitar la colaboración comunitaria.
+Este proyecto está licenciado bajo los términos de la [Licencia MIT](LICENSE).
 
 ---
 
