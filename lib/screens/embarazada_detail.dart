@@ -158,22 +158,59 @@ class _EmbarazadaDetailScreenState extends State<EmbarazadaDetailScreen>
     );
   }
 
-  void _showAddEvolucionDialog() {
-    final pesoController = TextEditingController();
-    final presionController = TextEditingController();
-    final alturaUterinaController = TextEditingController();
-    final fcFetalController = TextEditingController();
-    final sintomasController = TextEditingController();
-    final observacionesController = TextEditingController();
+  void _showAddEvolucionDialog({Evolucion? evolucion}) {
+    final pesoController = TextEditingController(text: evolucion?.peso ?? '');
+    final presionController = TextEditingController(
+      text: evolucion?.presionArterial ?? '',
+    );
+    final alturaUterinaController = TextEditingController(
+      text: evolucion?.alturaUterina ?? '',
+    );
+    final fcFetalController = TextEditingController(
+      text: evolucion?.frecuenciaCardiacaFetal ?? '',
+    );
+    final sintomasController = TextEditingController(
+      text: evolucion?.sintomas ?? '',
+    );
+    final observacionesController = TextEditingController(
+      text: evolucion?.observaciones ?? '',
+    );
+    final fechaController = TextEditingController(
+      text:
+          evolucion?.fecha.toString().substring(0, 10) ??
+          DateTime.now().toString().substring(0, 10),
+    );
+    DateTime fechaSeleccionada = evolucion?.fecha ?? DateTime.now();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Nueva Evolución'),
+        title: Text(evolucion == null ? 'Nueva Evolución' : 'Editar Evolución'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              TextField(
+                controller: fechaController,
+                decoration: const InputDecoration(
+                  labelText: 'Fecha',
+                  border: OutlineInputBorder(),
+                ),
+                readOnly: true,
+                onTap: () async {
+                  final fecha = await showDatePicker(
+                    context: context,
+                    initialDate: fechaSeleccionada,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now(),
+                  );
+                  if (fecha != null) {
+                    fechaSeleccionada = fecha;
+                    fechaController.text = fecha.toString().substring(0, 10);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: pesoController,
                 decoration: const InputDecoration(
@@ -237,10 +274,10 @@ class _EmbarazadaDetailScreenState extends State<EmbarazadaDetailScreen>
           ),
           ElevatedButton(
             onPressed: () async {
-              final evolucion = Evolucion(
-                id: const Uuid().v4(),
+              final evolucionData = Evolucion(
+                id: evolucion?.id ?? const Uuid().v4(),
                 idEmbarazada: _embarazada!.id,
-                fecha: DateTime.now(),
+                fecha: fechaSeleccionada,
                 peso: pesoController.text.trim(),
                 presionArterial: presionController.text.trim(),
                 alturaUterina: alturaUterinaController.text.trim(),
@@ -249,7 +286,11 @@ class _EmbarazadaDetailScreenState extends State<EmbarazadaDetailScreen>
                 observaciones: observacionesController.text.trim(),
                 profesional: _embarazada!.medico,
               );
-              await DatabaseHelper.instance.insertEvolucion(evolucion);
+              if (evolucion == null) {
+                await DatabaseHelper.instance.insertEvolucion(evolucionData);
+              } else {
+                await DatabaseHelper.instance.updateEvolucion(evolucionData);
+              }
               if (mounted) {
                 Navigator.pop(context);
                 _loadData();
@@ -260,6 +301,33 @@ class _EmbarazadaDetailScreenState extends State<EmbarazadaDetailScreen>
         ],
       ),
     );
+  }
+
+  Future<void> _deleteEvolucion(String id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar eliminación'),
+        content: const Text(
+          '¿Está seguro de que desea eliminar esta evolución?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await DatabaseHelper.instance.deleteEvolucion(id);
+      _loadData();
+    }
   }
 
   @override
@@ -997,6 +1065,24 @@ class _EmbarazadaDetailScreenState extends State<EmbarazadaDetailScreen>
                       child: ExpansionTile(
                         title: Text(evo.fecha.toString().substring(0, 10)),
                         subtitle: Text('Dr. ${evo.profesional ?? 'N/A'}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 20),
+                              onPressed: () =>
+                                  _showAddEvolucionDialog(evolucion: evo),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: Colors.red,
+                              ),
+                              onPressed: () => _deleteEvolucion(evo.id),
+                            ),
+                          ],
+                        ),
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(16),

@@ -447,6 +447,21 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> updateEvolucion(Evolucion evolucion) async {
+    final db = await instance.database;
+    await db.update(
+      'evoluciones',
+      evolucion.toJson(),
+      where: 'id = ?',
+      whereArgs: [evolucion.id],
+    );
+  }
+
+  Future<void> deleteEvolucion(String id) async {
+    final db = await instance.database;
+    await db.delete('evoluciones', where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<List<Evolucion>> getEvolucionesByEmbarazada(
     String idEmbarazada,
   ) async {
@@ -720,6 +735,21 @@ class DatabaseHelper {
       evolucion.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<void> updateEvolucionLactante(EvolucionLactante evolucion) async {
+    final db = await instance.database;
+    await db.update(
+      'evoluciones_lactantes',
+      evolucion.toJson(),
+      where: 'id = ?',
+      whereArgs: [evolucion.id],
+    );
+  }
+
+  Future<void> deleteEvolucionLactante(String id) async {
+    final db = await instance.database;
+    await db.delete('evoluciones_lactantes', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<List<EvolucionLactante>> getEvolucionesByLactante(
