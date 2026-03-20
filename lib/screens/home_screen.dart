@@ -234,6 +234,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Lactantes',
                 'Seguimiento del desarrollo, alimentación (LME, mixta, complementaria), crecimiento y evaluaciones periódicas.',
               ),
+              const SizedBox(height: 8),
+              _buildCaracteristica(
+                Icons.female,
+                'Puérperas',
+                'Control post-parto durante 42 días. Seguimiento de evolución, citas y registro del tipo de parto.',
+              ),
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),
