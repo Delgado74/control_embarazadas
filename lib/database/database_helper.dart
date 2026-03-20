@@ -8,6 +8,8 @@ import '../models/cita.dart';
 import '../models/evolucion.dart';
 import '../models/lactante.dart';
 import '../models/evolucion_lactante.dart';
+import '../models/puerpera.dart';
+import '../models/evolucion_puerpera.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -27,7 +29,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -100,6 +102,75 @@ class DatabaseHelper {
           FOREIGN KEY (idLactante) REFERENCES lactantes (id)
         )
       ''');
+
+      await db.execute('''
+        CREATE TABLE puerperas (
+          id TEXT PRIMARY KEY,
+          idEmbarazada TEXT NOT NULL,
+          nombre TEXT NOT NULL,
+          edad TEXT NOT NULL,
+          cedula TEXT NOT NULL,
+          telefono TEXT NOT NULL,
+          direccion TEXT NOT NULL,
+          fechaRegistro TEXT NOT NULL,
+          fechaParto TEXT NOT NULL,
+          tipoParto TEXT NOT NULL,
+          observaciones TEXT,
+          consultorio TEXT NOT NULL,
+          medico TEXT,
+          escuela TEXT,
+          estadoConyugal TEXT,
+          ocupacion TEXT,
+          antecedentesFamiliares TEXT,
+          antecedentesPersonales TEXT,
+          intervenciones TEXT,
+          transfusiones TEXT,
+          citologia TEXT,
+          weighing TEXT,
+          height TEXT,
+          nombreEsposo TEXT,
+          cedulaEsposo TEXT,
+          ocupacionEsposo TEXT,
+          condicionesSocioeconomicas TEXT,
+          ingresoHospitalario TEXT,
+          activa INTEGER DEFAULT 1
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE citas_puerperas (
+          id TEXT PRIMARY KEY,
+          idPuerpera TEXT NOT NULL,
+          fechaHora TEXT NOT NULL,
+          motivo TEXT NOT NULL,
+          observaciones TEXT,
+          cumplida INTEGER DEFAULT 0,
+          FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE evoluciones_puerperas (
+          id TEXT PRIMARY KEY,
+          idPuerpera TEXT NOT NULL,
+          fecha TEXT NOT NULL,
+          peso TEXT,
+          presionArterial TEXT,
+          temperatura TEXT,
+          frecuenciaCardiaca TEXT,
+          frecuenciaRespiratoria TEXT,
+          alturaUterina TEXT,
+          loquios TEXT,
+          mamas TEXT,
+          perine TEXT,
+          estadoPsiquico TEXT,
+          sintomas TEXT,
+          observaciones TEXT,
+          proximaCita TEXT,
+          profesional TEXT,
+          FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
+        )
+      ''');
     }
 
     if (oldVersion < 3) {
@@ -110,6 +181,77 @@ class DatabaseHelper {
 
     if (oldVersion < 4) {
       await db.execute('ALTER TABLE lactantes ADD COLUMN alimentacion TEXT');
+    }
+
+    if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE puerperas (
+          id TEXT PRIMARY KEY,
+          idEmbarazada TEXT NOT NULL,
+          nombre TEXT NOT NULL,
+          edad TEXT NOT NULL,
+          cedula TEXT NOT NULL,
+          telefono TEXT NOT NULL,
+          direccion TEXT NOT NULL,
+          fechaRegistro TEXT NOT NULL,
+          fechaParto TEXT NOT NULL,
+          tipoParto TEXT NOT NULL,
+          observaciones TEXT,
+          consultorio TEXT NOT NULL,
+          medico TEXT,
+          escuela TEXT,
+          estadoConyugal TEXT,
+          ocupacion TEXT,
+          antecedentesFamiliares TEXT,
+          antecedentesPersonales TEXT,
+          intervenciones TEXT,
+          transfusiones TEXT,
+          citologia TEXT,
+          weighing TEXT,
+          height TEXT,
+          nombreEsposo TEXT,
+          cedulaEsposo TEXT,
+          ocupacionEsposo TEXT,
+          condicionesSocioeconomicas TEXT,
+          ingresoHospitalario TEXT,
+          activa INTEGER DEFAULT 1
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE citas_puerperas (
+          id TEXT PRIMARY KEY,
+          idPuerpera TEXT NOT NULL,
+          fechaHora TEXT NOT NULL,
+          motivo TEXT NOT NULL,
+          observaciones TEXT,
+          cumplida INTEGER DEFAULT 0,
+          FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE evoluciones_puerperas (
+          id TEXT PRIMARY KEY,
+          idPuerpera TEXT NOT NULL,
+          fecha TEXT NOT NULL,
+          peso TEXT,
+          presionArterial TEXT,
+          temperatura TEXT,
+          frecuenciaCardiaca TEXT,
+          frecuenciaRespiratoria TEXT,
+          alturaUterina TEXT,
+          loquios TEXT,
+          mamas TEXT,
+          perine TEXT,
+          estadoPsiquico TEXT,
+          sintomas TEXT,
+          observaciones TEXT,
+          proximaCita TEXT,
+          profesional TEXT,
+          FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
+        )
+      ''');
     }
   }
 
@@ -763,6 +905,157 @@ class DatabaseHelper {
       orderBy: 'fecha DESC',
     );
     return result.map((json) => EvolucionLactante.fromJson(json)).toList();
+  }
+
+  Future<void> insertPuerpera(Puerpera puerpera) async {
+    final db = await instance.database;
+    await db.insert(
+      'puerperas',
+      puerpera.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Puerpera>> getAllPuerperas({bool soloActivas = true}) async {
+    final db = await instance.database;
+    final result = soloActivas
+        ? await db.query(
+            'puerperas',
+            where: 'activa = ?',
+            whereArgs: [1],
+            orderBy: 'fechaParto DESC',
+          )
+        : await db.query('puerperas', orderBy: 'fechaParto DESC');
+    return result.map((json) => Puerpera.fromJson(json)).toList();
+  }
+
+  Future<Puerpera?> getPuerpera(String id) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'puerperas',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (result.isEmpty) return null;
+    return Puerpera.fromJson(result.first);
+  }
+
+  Future<Puerpera?> getPuerperaByEmbarazada(String idEmbarazada) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'puerperas',
+      where: 'idEmbarazada = ?',
+      whereArgs: [idEmbarazada],
+    );
+    if (result.isEmpty) return null;
+    return Puerpera.fromJson(result.first);
+  }
+
+  Future<List<Puerpera>> getPuerperasByConsultorio(String consultorio) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'puerperas',
+      where: 'consultorio = ? AND activa = ?',
+      whereArgs: [consultorio, 1],
+      orderBy: 'fechaParto DESC',
+    );
+    return result.map((json) => Puerpera.fromJson(json)).toList();
+  }
+
+  Future<int> updatePuerpera(Puerpera puerpera) async {
+    final db = await instance.database;
+    return await db.update(
+      'puerperas',
+      puerpera.toJson(),
+      where: 'id = ?',
+      whereArgs: [puerpera.id],
+    );
+  }
+
+  Future<int> deletePuerpera(String id) async {
+    final db = await instance.database;
+    await db.delete(
+      'citas_puerperas',
+      where: 'idPuerpera = ?',
+      whereArgs: [id],
+    );
+    await db.delete(
+      'evoluciones_puerperas',
+      where: 'idPuerpera = ?',
+      whereArgs: [id],
+    );
+    return await db.delete('puerperas', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> insertCitaPuerpera(Cita cita) async {
+    final db = await instance.database;
+    await db.insert('citas_puerperas', {
+      'id': cita.id,
+      'idPuerpera': cita.idEmbarazada,
+      'fechaHora': cita.fechaHora.toIso8601String(),
+      'motivo': cita.motivo,
+      'observaciones': cita.observaciones,
+      'cumplida': cita.cumplida ? 1 : 0,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Cita>> getCitasByPuerpera(String idPuerpera) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'citas_puerperas',
+      where: 'idPuerpera = ?',
+      whereArgs: [idPuerpera],
+      orderBy: 'fechaHora DESC',
+    );
+    return result
+        .map(
+          (json) => Cita(
+            id: json['id'] as String,
+            idEmbarazada: json['idPuerpera'] as String,
+            fechaHora: DateTime.parse(json['fechaHora'] as String),
+            motivo: json['motivo'] as String,
+            observaciones: json['observaciones'] as String?,
+            cumplida: (json['cumplida'] as int) == 1,
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> insertEvolucionPuerpera(EvolucionPuerpera evolucion) async {
+    final db = await instance.database;
+    await db.insert(
+      'evoluciones_puerperas',
+      evolucion.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> updateEvolucionPuerpera(EvolucionPuerpera evolucion) async {
+    final db = await instance.database;
+    await db.update(
+      'evoluciones_puerperas',
+      evolucion.toJson(),
+      where: 'id = ?',
+      whereArgs: [evolucion.id],
+    );
+  }
+
+  Future<void> deleteEvolucionPuerpera(String id) async {
+    final db = await instance.database;
+    await db.delete('evoluciones_puerperas', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<EvolucionPuerpera>> getEvolucionesByPuerpera(
+    String idPuerpera,
+  ) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'evoluciones_puerperas',
+      where: 'idPuerpera = ?',
+      whereArgs: [idPuerpera],
+      orderBy: 'fecha DESC',
+    );
+    return result.map((json) => EvolucionPuerpera.fromJson(json)).toList();
   }
 
   Future<void> close() async {

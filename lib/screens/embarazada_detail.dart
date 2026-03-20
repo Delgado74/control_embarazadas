@@ -4,7 +4,9 @@ import '../database/database_helper.dart';
 import '../models/embarazada.dart';
 import '../models/cita.dart';
 import '../models/evolucion.dart';
+import '../models/puerpera.dart';
 import 'embarazada_form.dart';
+import 'puerpera_form.dart';
 
 class EmbarazadaDetailScreen extends StatefulWidget {
   final Embarazada embarazada;
@@ -73,6 +75,23 @@ class _EmbarazadaDetailScreenState extends State<EmbarazadaDetailScreen>
       await DatabaseHelper.instance.deleteEmbarazada(_embarazada!.id);
       if (mounted) Navigator.pop(context);
     }
+  }
+
+  void _registrarParto() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PuerperaFormScreen(
+          embarazada: _embarazada,
+          consultorio: _embarazada!.consultorio,
+          medico: _embarazada!.medico ?? '',
+        ),
+      ),
+    ).then((result) {
+      if (result == true) {
+        Navigator.pop(context, true);
+      }
+    });
   }
 
   void _showAddCitaDialog() {
@@ -338,6 +357,11 @@ class _EmbarazadaDetailScreenState extends State<EmbarazadaDetailScreen>
         backgroundColor: const Color(0xFF1565C0),
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.child_friendly),
+            onPressed: _registrarParto,
+            tooltip: 'Registrar Parto',
+          ),
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {

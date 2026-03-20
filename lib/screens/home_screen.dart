@@ -3,6 +3,7 @@ import '../database/database_helper.dart';
 import '../models/embarazada.dart';
 import 'gestantes_screen.dart';
 import 'lactantes_screen.dart';
+import 'puerperas_screen.dart';
 import 'export_import_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -550,6 +551,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              _buildOpcionCard(
+                context,
+                'PUERPERAS',
+                Icons.female,
+                Colors.purple,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PuerperasScreen(
+                        consultorio: _nombreConsultorio,
+                        medico: _nombreMedico,
+                      ),
+                    ),
+                  );
+                },
               ),
               const Spacer(),
               const Text(
