@@ -122,6 +122,9 @@ class _PuerperasScreenState extends State<PuerperasScreen> {
         ? Colors.orange
         : Colors.green;
     final estadoTexto = puerpera.estadoPuerperio;
+    final fechaPartoFormatted = DateFormat(
+      'dd/MM/yyyy',
+    ).format(puerpera.fechaParto);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
@@ -149,24 +152,12 @@ class _PuerperasScreenState extends State<PuerperasScreen> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          puerpera.nombre,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'DNI: ${puerpera.cedula}',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      puerpera.nombre,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   Container(
@@ -191,22 +182,15 @@ class _PuerperasScreenState extends State<PuerperasScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              _buildInfoChip(Icons.child_care, puerpera.tipoParto),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  estadoTexto,
-                  style: TextStyle(
-                    color: Colors.blue.shade700,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildInfoChip(Icons.calendar_today, fechaPartoFormatted),
+                  _buildInfoChip(Icons.child_care, puerpera.tipoParto),
+                  _buildInfoChip(Icons.timeline, estadoTexto),
+                  _buildInfoChip(Icons.location_on, puerpera.consultorio),
+                ],
               ),
               if (!puerpera.activa) ...[
                 const SizedBox(height: 8),
