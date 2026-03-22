@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.salud.control_embarazadas"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "29.0.14033849"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
