@@ -29,7 +29,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -253,6 +253,77 @@ class DatabaseHelper {
         )
       ''');
     }
+
+    if (oldVersion < 6) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS puerperas (
+          id TEXT PRIMARY KEY,
+          idEmbarazada TEXT NOT NULL,
+          nombre TEXT NOT NULL,
+          edad TEXT NOT NULL,
+          cedula TEXT NOT NULL,
+          telefono TEXT NOT NULL,
+          direccion TEXT NOT NULL,
+          fechaRegistro TEXT NOT NULL,
+          fechaParto TEXT NOT NULL,
+          tipoParto TEXT NOT NULL,
+          observaciones TEXT,
+          consultorio TEXT NOT NULL,
+          medico TEXT,
+          escuela TEXT,
+          estadoConyugal TEXT,
+          ocupacion TEXT,
+          antecedentesFamiliares TEXT,
+          antecedentesPersonales TEXT,
+          intervenciones TEXT,
+          transfusiones TEXT,
+          citologia TEXT,
+          weighing TEXT,
+          height TEXT,
+          nombreEsposo TEXT,
+          cedulaEsposo TEXT,
+          ocupacionEsposo TEXT,
+          condicionesSocioeconomicas TEXT,
+          ingresoHospitalario TEXT,
+          activa INTEGER DEFAULT 1
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS citas_puerperas (
+          id TEXT PRIMARY KEY,
+          idPuerpera TEXT NOT NULL,
+          fechaHora TEXT NOT NULL,
+          motivo TEXT NOT NULL,
+          observaciones TEXT,
+          cumplida INTEGER DEFAULT 0,
+          FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS evoluciones_puerperas (
+          id TEXT PRIMARY KEY,
+          idPuerpera TEXT NOT NULL,
+          fecha TEXT NOT NULL,
+          peso TEXT,
+          presionArterial TEXT,
+          temperatura TEXT,
+          frecuenciaCardiaca TEXT,
+          frecuenciaRespiratoria TEXT,
+          alturaUterina TEXT,
+          loquios TEXT,
+          mamas TEXT,
+          perine TEXT,
+          estadoPsiquico TEXT,
+          sintomas TEXT,
+          observaciones TEXT,
+          proximaCita TEXT,
+          profesional TEXT,
+          FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
+        )
+      ''');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -391,6 +462,75 @@ class DatabaseHelper {
         observaciones TEXT,
         profesional TEXT,
         FOREIGN KEY (idLactante) REFERENCES lactantes (id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE puerperas (
+        id TEXT PRIMARY KEY,
+        idEmbarazada TEXT NOT NULL,
+        nombre TEXT NOT NULL,
+        edad TEXT NOT NULL,
+        cedula TEXT NOT NULL,
+        telefono TEXT NOT NULL,
+        direccion TEXT NOT NULL,
+        fechaRegistro TEXT NOT NULL,
+        fechaParto TEXT NOT NULL,
+        tipoParto TEXT NOT NULL,
+        observaciones TEXT,
+        consultorio TEXT NOT NULL,
+        medico TEXT,
+        escuela TEXT,
+        estadoConyugal TEXT,
+        ocupacion TEXT,
+        antecedentesFamiliares TEXT,
+        antecedentesPersonales TEXT,
+        intervenciones TEXT,
+        transfusiones TEXT,
+        citologia TEXT,
+        weighing TEXT,
+        height TEXT,
+        nombreEsposo TEXT,
+        cedulaEsposo TEXT,
+        ocupacionEsposo TEXT,
+        condicionesSocioeconomicas TEXT,
+        ingresoHospitalario TEXT,
+        activa INTEGER DEFAULT 1
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE citas_puerperas (
+        id TEXT PRIMARY KEY,
+        idPuerpera TEXT NOT NULL,
+        fechaHora TEXT NOT NULL,
+        motivo TEXT NOT NULL,
+        observaciones TEXT,
+        cumplida INTEGER DEFAULT 0,
+        FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE evoluciones_puerperas (
+        id TEXT PRIMARY KEY,
+        idPuerpera TEXT NOT NULL,
+        fecha TEXT NOT NULL,
+        peso TEXT,
+        presionArterial TEXT,
+        temperatura TEXT,
+        frecuenciaCardiaca TEXT,
+        frecuenciaRespiratoria TEXT,
+        alturaUterina TEXT,
+        loquios TEXT,
+        mamas TEXT,
+        perine TEXT,
+        estadoPsiquico TEXT,
+        sintomas TEXT,
+        observaciones TEXT,
+        proximaCita TEXT,
+        profesional TEXT,
+        FOREIGN KEY (idPuerpera) REFERENCES puerperas (id)
       )
     ''');
   }
